@@ -17,25 +17,20 @@ from werkzeug.utils import secure_filename
 @app.route('/api/upload', methods=['POST'])
 def upload():
     form= UploadForm()
-    if method == "POST" and not form.validate_on_submit():
-        response = jsonify(success = False, errors = form_errors())
-        return response
-
-        photo = request.files['photo']
-        try:
-            photo_ = secure_filename(photo_)
-            photo.save(os.path.join(app.config['UPLOAD_FOLDER'], photo_filename))
-        except:
-            response = jsonify(sucess = False, error = ["Error while saving fiile"])
-            return response
+    if request.method=='POST' and form.validate_on_submit():
+        description=form.description.data
+        photo=form.photo.data
+        filename=secure_filename(photo.filename)
+        photo.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
         
-    response = jsonify(success = True,
-    message = "File Upload Successful",
-    filename = photo_,
-    description = form.description.data )
+        upload={
+            "message":"File Upload Successful",
+            "filename": filename,
+            "description": description
+        }
+        return jsonify(upload=upload)
 
-    return response
-
+    return jsonify(form_errors(form))
 
 # Please create all new routes and view functions above this route.
 # This route is now our catch all route for our VueJS single page
